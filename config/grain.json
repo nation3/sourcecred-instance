@@ -6,5 +6,6 @@
       "discount": 0.5
     }
   ],
-  "maxSimultaneousDistributions": 4
+  "maxSimultaneousDistributions": 4,
+  "integration": { "type": "csv", "config": { "gnosis": true } }
 }
