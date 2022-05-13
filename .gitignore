@@ -7,3 +7,8 @@ cache/
 **/.DS_Store?
 
 yarn-error.log
+
+#  Ignore all content under output/ except CSV folder (output/grainIntegration/)
+output/credGrainView
+output/credGraph
+output/graphs/
