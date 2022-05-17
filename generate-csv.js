@@ -96,7 +96,13 @@ function writeToGnosisCSV(filePathGnosis, csvRows) {
     
     const writer = csvWriter.createObjectCsvWriter({
         path: filePathGnosis,
-        header: ['token_type', 'token_address', 'receiver', 'amount', 'id']
+        header: [
+            {id: 'token_type', title: 'token_type'},
+            {id: 'token_address', title: 'token_address'},
+            {id: 'receiver', title: 'receiver'},
+            {id: 'amount', title: 'amount'},
+            {id: 'id', title: 'id'}
+        ]
     })
 
     writer.writeRecords(csvRows)
