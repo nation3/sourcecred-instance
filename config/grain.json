@@ -7,5 +7,5 @@
     }
   ],
   "maxSimultaneousDistributions": 4,
-  "integration": "csv"
+  "integration": { "type": "csv", "config": { "gnosis": true } }
 }
