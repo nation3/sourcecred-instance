@@ -31,6 +31,9 @@ jobs:
 
       - name: Distribute Grain 💸
         run: yarn grain > grain_output.txt
+        
+      - name: Generate Gnosis CSVs
+        run: node generate-csv.js
 
       - name: Set environment variables
         id: pr_details
