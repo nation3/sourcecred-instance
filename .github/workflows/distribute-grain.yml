@@ -33,7 +33,10 @@ jobs:
         run: yarn grain > grain_output.txt
         
       - name: Generate Gnosis CSVs
-        run: node generate-csv.js
+        run: |
+          npm install csv-parser
+          npm install csv-writer
+          node generate-csv.js
 
       - name: Set environment variables
         id: pr_details
