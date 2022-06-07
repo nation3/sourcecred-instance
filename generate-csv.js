@@ -1,4 +1,3 @@
-// npm install csv-writer
 // node generate-csv.js
 
 const fs = require('fs')
