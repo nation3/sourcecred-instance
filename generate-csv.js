@@ -8,7 +8,7 @@ const csvWriter = require('csv-writer')
 generateCSV()
 
 /**
- * Generates CSV files compatible  with Disperse.app and Gnosis Safe.
+ * Generates CSV files compatible with Disperse.app, Gnosis Safe and Parcel.
  */
 function generateCSV() {
     console.log('generateCSV')
@@ -24,7 +24,8 @@ function generateCSV() {
             const filePath = path.join('output/grainIntegration/', file)
             if (filePath.endsWith('.csv') 
                     && !filePath.endsWith('_disperse.csv') 
-                    && !filePath.endsWith('_gnosis.csv')) {
+                    && !filePath.endsWith('_gnosis.csv')
+                    && !filePath.endsWith('_parcel.csv')) {
                 // Read the rows of data from the CSV file
                 const csvRows = []
                 fs.createReadStream(filePath)
@@ -46,6 +47,11 @@ function generateCSV() {
                         filePathGnosis = filePath.replace('.csv', '_gnosis.csv')
                         console.log('filePathGnosis', filePathGnosis)
                         writeToGnosisCSV(filePathGnosis, csvRows)
+
+                        // Generate CSV for Parcel
+                        filePathParcel = filePath.replace('.csv', '_parcel.csv')
+                        console.log('filePathParcel', filePathParcel)
+                        writeToParcelCSV(filePathParcel, csvRows)
                     })
             }
         })
@@ -100,6 +106,27 @@ function writeToGnosisCSV(filePathGnosis, csvRows) {
             {id: 'receiver', title: 'receiver'},
             {id: 'amount', title: 'amount'},
             {id: 'id', title: 'id'}
+        ]
+    })
+
+    writer.writeRecords(csvRows)
+}
+
+function writeToParcelCSV(filePathParcel, csvRows) {
+    console.log('writeToParcelCSV')
+
+    // Add missing column
+    csvRows.forEach(function(row, index) {
+        row.token_address = '0x333A4823466879eeF910A04D473505da62142069'
+    })
+    
+    const writer = csvWriter.createObjectCsvWriter({
+        path: filePathParcel,
+        header: [
+            {id: 'name', title: 'Name(Optional)'},
+            {id: 'receiver', title: 'Address/ENS'},
+            {id: 'amount', title: 'Amount'},
+            {id: 'token_address', title: 'Token Address/Token Symbol'},
         ]
     })
 
