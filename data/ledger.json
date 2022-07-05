@@ -9201,3 +9201,5 @@
 {"action":{"identityId":"WbcouqXPOkrQD4HjSdnWPw","type":"TOGGLE_ACTIVATION"},"ledgerTimestamp":1656995329101,"uuid":"eiwjjYbU1kVx8yh5v7P2uA","version":"1"}
 {"action":{"currency":{"chainId":"1","tokenAddress":"0x333A4823466879eeF910A04D473505da62142069","type":"EVM"},"id":"8PTXGQLLk9J09IeC4BaaqQ","payoutAddress":"0xCaA9743D454824eD06dC6bad7424DD32328D6644","type":"SET_PAYOUT_ADDRESS"},"ledgerTimestamp":1656995346497,"uuid":"7wQCZDJb0DQaPWjZbgNNyw","version":"1"}
 {"action":{"identityId":"8PTXGQLLk9J09IeC4BaaqQ","type":"TOGGLE_ACTIVATION"},"ledgerTimestamp":1656995347517,"uuid":"weIM4D23hOC8TqMoM39qmA","version":"1"}
+{"action":{"currency":{"chainId":"1","tokenAddress":"0x333A4823466879eeF910A04D473505da62142069","type":"EVM"},"id":"glAwGuJery2CK7YZC9rc4Q","payoutAddress":"0xcDB1F3e47A0F58920D22e82FAd9d3eB4784A466E","type":"SET_PAYOUT_ADDRESS"},"ledgerTimestamp":1656996033997,"uuid":"P1EPgoN0u3KylPMgjheIDQ","version":"1"}
+{"action":{"identityId":"glAwGuJery2CK7YZC9rc4Q","type":"TOGGLE_ACTIVATION"},"ledgerTimestamp":1656996034876,"uuid":"1HyeNDAztg4oWCeVbzacZQ","version":"1"}
