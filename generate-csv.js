@@ -27,7 +27,7 @@ function generateCSV() {
                     && !filePath.endsWith('_gnosis.csv')
                     && !filePath.endsWith('_parcel.csv')) {
                 // Read the rows of data from the CSV file
-                const csvRows = []
+                let csvRows = []
                 fs.createReadStream(filePath)
                     .pipe(csvParser(['receiver', 'amount']))
                     .on('data', (row) => insertRow(csvRows, row))
@@ -37,6 +37,8 @@ function generateCSV() {
 
                         // Convert amount format
                         convertAmountFormat(csvRows)
+
+                        csvRows = pruneRows(csvRows);
 
                         // Generate CSV for Disperse.app
                         filePathDisperse = filePath.replace('.csv', '_disperse.csv')
@@ -67,6 +69,12 @@ function insertRow(rows, row) {
     newRow.token_address = '0x333A4823466879eeF910A04D473505da62142069'
 
     rows.push(newRow)
+}
+
+function pruneRows(rows) {
+    const floor = 0.0002;
+    let pruned = rows.filter(row => row.amount > floor);
+    return pruned;
 }
 
 /**
