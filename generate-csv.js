@@ -24,12 +24,13 @@ function generateCSV() {
             const filePath = path.join('output/grainIntegration/', file)
             if (filePath.endsWith('.csv') 
                     && !filePath.endsWith('_disperse.csv') 
-                    && !filePath.endsWith('_gnosis.csv')) {
+                    && !filePath.endsWith('_gnosis.csv')
+                    && !filePath.endsWith('_parcel.csv')) {
                 // Read the rows of data from the CSV file
                 const csvRows = []
                 fs.createReadStream(filePath)
                     .pipe(csvParser(['receiver', 'amount']))
-                    .on('data', (row) => csvRows.push(row))
+                    .on('data', (row) => insertRow(csvRows, row))
                     .on('end', () => {
                         console.log('\nfilePath', filePath)
                         console.log('csvRows:\n', csvRows)
@@ -46,10 +47,26 @@ function generateCSV() {
                         filePathGnosis = filePath.replace('.csv', '_gnosis.csv')
                         console.log('filePathGnosis', filePathGnosis)
                         writeToGnosisCSV(filePathGnosis, csvRows)
+
+                        // Generate CSV for Parcel
+                        filePathParcel = filePath.replace('.csv', '_parcel.csv')
+                        console.log('filePathParcel', filePathParcel)
+                        writeToParcelCSV(filePathParcel, csvRows)
                     })
             }
         })
     })
+}
+
+function insertRow(rows, row) {
+    let newRow = {};
+    newRow.receiver = row.receiver
+    newRow.amount = row.amount
+    newRow.name = ''
+    newRow.token_type = 'erc20'
+    newRow.token_address = '0x333A4823466879eeF910A04D473505da62142069'
+
+    rows.push(newRow)
 }
 
 /**
@@ -100,6 +117,22 @@ function writeToGnosisCSV(filePathGnosis, csvRows) {
             {id: 'receiver', title: 'receiver'},
             {id: 'amount', title: 'amount'},
             {id: 'id', title: 'id'}
+        ]
+    })
+
+    writer.writeRecords(csvRows)
+}
+
+function writeToParcelCSV(filePathParcel, csvRows) {
+    console.log('writeToParcelCSV')
+
+    const writer = csvWriter.createObjectCsvWriter({
+        path: filePathParcel,
+        header: [
+            {id: 'name', title: 'Name(Optional)'},
+            {id: 'receiver', title: 'receiver'},
+            {id: 'amount', title: 'amount'},
+            {id: 'token_address', title: 'token_address'}
         ]
     })
 
