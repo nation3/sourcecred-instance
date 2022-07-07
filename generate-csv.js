@@ -138,9 +138,9 @@ function writeToParcelCSV(filePathParcel, csvRows) {
         path: filePathParcel,
         header: [
             {id: 'name', title: 'Name(Optional)'},
-            {id: 'receiver', title: 'receiver'},
-            {id: 'amount', title: 'amount'},
-            {id: 'token_address', title: 'token_address'}
+            {id: 'receiver', title: 'Address/ENS'},
+            {id: 'amount', title: 'Amount'},
+            {id: 'token_address', title: 'Token Address/Token Symbol'}
         ]
     })
 
