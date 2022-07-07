@@ -110,12 +110,6 @@ function writeToDisperseCSV(filePathDisperse, csvRows) {
 
 function writeToGnosisCSV(filePathGnosis, csvRows) {
     console.log('writeToGnosisCSV')
-
-    // Add missing columns
-    csvRows.forEach(function(row, index) {
-        row.token_type = 'erc20'
-        row.token_address = '0x333A4823466879eeF910A04D473505da62142069'
-    })
     
     const writer = csvWriter.createObjectCsvWriter({
         path: filePathGnosis,
