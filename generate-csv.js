@@ -72,7 +72,7 @@ function insertRow(rows, row) {
 }
 
 function pruneRows(rows) {
-    const floor = 0.002;
+    const floor = 0;
     let pruned = rows.filter(row => row.amount > floor);
     return pruned;
 }
