@@ -8,7 +8,7 @@ const csvWriter = require('csv-writer')
 generateCSV()
 
 /**
- * Generates CSV files compatible  with Disperse.app and Gnosis Safe.
+ * Generates CSV files compatible with Disperse.app, Gnosis Safe and Parcel.
  */
 function generateCSV() {
     console.log('generateCSV')
@@ -72,7 +72,7 @@ function insertRow(rows, row) {
 }
 
 function pruneRows(rows) {
-    const floor = 0.0002;
+    const floor = 0.002;
     let pruned = rows.filter(row => row.amount > floor);
     return pruned;
 }
