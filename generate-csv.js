@@ -27,16 +27,18 @@ function generateCSV() {
                     && !filePath.endsWith('_gnosis.csv')
                     && !filePath.endsWith('_parcel.csv')) {
                 // Read the rows of data from the CSV file
-                const csvRows = []
+                let csvRows = []
                 fs.createReadStream(filePath)
                     .pipe(csvParser(['receiver', 'amount']))
-                    .on('data', (row) => csvRows.push(row))
+                    .on('data', (row) => insertRow(csvRows, row))
                     .on('end', () => {
                         console.log('\nfilePath', filePath)
                         console.log('csvRows:\n', csvRows)
 
                         // Convert amount format
                         convertAmountFormat(csvRows)
+
+                        csvRows = pruneRows(csvRows);
 
                         // Generate CSV for Disperse.app
                         filePathDisperse = filePath.replace('.csv', '_disperse.csv')
@@ -56,6 +58,23 @@ function generateCSV() {
             }
         })
     })
+}
+
+function insertRow(rows, row) {
+    let newRow = {};
+    newRow.receiver = row.receiver
+    newRow.amount = row.amount
+    newRow.name = ''
+    newRow.token_type = 'erc20'
+    newRow.token_address = '0x333A4823466879eeF910A04D473505da62142069'
+
+    rows.push(newRow)
+}
+
+function pruneRows(rows) {
+    const floor = 0;
+    let pruned = rows.filter(row => row.amount > floor);
+    return pruned;
 }
 
 /**
@@ -91,12 +110,6 @@ function writeToDisperseCSV(filePathDisperse, csvRows) {
 
 function writeToGnosisCSV(filePathGnosis, csvRows) {
     console.log('writeToGnosisCSV')
-
-    // Add missing columns
-    csvRows.forEach(function(row, index) {
-        row.token_type = 'erc20'
-        row.token_address = '0x333A4823466879eeF910A04D473505da62142069'
-    })
     
     const writer = csvWriter.createObjectCsvWriter({
         path: filePathGnosis,
@@ -115,18 +128,13 @@ function writeToGnosisCSV(filePathGnosis, csvRows) {
 function writeToParcelCSV(filePathParcel, csvRows) {
     console.log('writeToParcelCSV')
 
-    // Add missing column
-    csvRows.forEach(function(row, index) {
-        row.token_address = '0x333A4823466879eeF910A04D473505da62142069'
-    })
-    
     const writer = csvWriter.createObjectCsvWriter({
         path: filePathParcel,
         header: [
             {id: 'name', title: 'Name(Optional)'},
             {id: 'receiver', title: 'Address/ENS'},
             {id: 'amount', title: 'Amount'},
-            {id: 'token_address', title: 'Token Address/Token Symbol'},
+            {id: 'token_address', title: 'Token Address/Token Symbol'}
         ]
     })
 
