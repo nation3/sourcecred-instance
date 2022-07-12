@@ -5,6 +5,8 @@ const path = require('path')
 const csvParser = require('csv-parser')
 const csvWriter = require('csv-writer')
 
+const FLOOR = 0.00125;
+
 generateCSV()
 
 /**
@@ -72,8 +74,7 @@ function insertRow(rows, row) {
 }
 
 function pruneRows(rows) {
-    const floor = 0.01;
-    let pruned = rows.filter(row => row.amount >= floor);
+    let pruned = rows.filter(row => row.amount >= FLOOR);
     return pruned;
 }
 
