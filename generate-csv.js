@@ -5,6 +5,9 @@ const path = require('path')
 const csvParser = require('csv-parser')
 const csvWriter = require('csv-writer')
 
+// 0.50% of the weekly $NATION budget set in config/grain.json
+const FLOOR = 0.00125;
+
 generateCSV()
 
 /**
@@ -72,8 +75,7 @@ function insertRow(rows, row) {
 }
 
 function pruneRows(rows) {
-    const floor = 0;
-    let pruned = rows.filter(row => row.amount > floor);
+    let pruned = rows.filter(row => row.amount >= FLOOR);
     return pruned;
 }
 
