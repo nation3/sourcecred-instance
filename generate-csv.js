@@ -5,6 +5,7 @@ const path = require('path')
 const csvParser = require('csv-parser')
 const csvWriter = require('csv-writer')
 
+// 0.50% of the weekly $NATION budget set in config/grain.json
 const FLOOR = 0.00125;
 
 generateCSV()
