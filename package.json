@@ -8,7 +8,7 @@
   "private": true,
   "dependencies": {
     "@hozz/sourcecred": "^0.11.4",
-    "better-sqlite3": "^7.5.3",
+    "better-sqlite3": "^7.6.2",
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0"
   },
