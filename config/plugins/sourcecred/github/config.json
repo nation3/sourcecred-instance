@@ -1,1 +1,22 @@
-{"repositories": ["sourcecred-test/example-github"]}
+{
+    "repositories": [
+        "nation3/animated-3d-card",
+        "nation3/app",
+        "nation3/brand",
+        "nation3/court",
+        "nation3/dune-projects",
+        "nation3/email-tweetdrop",
+        "nation3/gov",
+        "nation3/gov-app",
+        "nation3/gov-proposals",
+        "nation3/mobile-passport",
+        "nation3/nation-drop",
+        "nation3/nationcred",
+        "nation3/nationcred-instance",
+        "nation3/sc-address-bot",
+        "nation3/shared",
+        "nation3/snapshot-spaces",
+        "nation3/website",
+        "nation3/wiki"
+    ]
+}

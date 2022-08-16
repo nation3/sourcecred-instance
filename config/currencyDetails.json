@@ -1,4 +1,9 @@
 {
-  "currencyName": "Grain",
-  "currencySuffix": " g"
+  "currencyName": "NATION",
+  "currencySuffix": " NATION",
+  "integrationCurrency": {
+    "type": "EVM",
+    "chainId": "1",
+    "tokenAddress": "0x333A4823466879eeF910A04D473505da62142069"
+  }
 }
