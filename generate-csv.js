@@ -4,6 +4,8 @@ const fs = require('fs')
 const path = require('path')
 const csvParser = require('csv-parser')
 const csvWriter = require('csv-writer')
+const currencyDetails = require('./config/currencyDetails.json')
+const nationAddress = currencyDetails.integrationCurrency.tokenAddress
 
 // 0.50% of the weekly $NATION budget set in config/grain.json
 const FLOOR = 0.00125;
@@ -36,7 +38,7 @@ function generateCSV() {
                     .on('data', (row) => insertRow(csvRows, row))
                     .on('end', () => {
                         console.log('\nfilePath', filePath)
-                        console.log('csvRows:\n', csvRows)
+                        console.table(csvRows.map(row => ({ receiver: row.receiver, amount: row.amount })))
 
                         // Convert amount format
                         convertAmountFormat(csvRows)
@@ -69,7 +71,7 @@ function insertRow(rows, row) {
     newRow.amount = row.amount
     newRow.name = ''
     newRow.token_type = 'erc20'
-    newRow.token_address = '0x333A4823466879eeF910A04D473505da62142069'
+    newRow.token_address = nationAddress
 
     rows.push(newRow)
 }
