@@ -71,7 +71,7 @@ function insertRow(rows, row) {
     newRow.amount = row.amount
     newRow.name = ''
     newRow.token_type = 'erc20'
-    newRow.token_address = nationAddress
+    newRow.token_address = currencyDetails.integrationCurrency.tokenAddress
 
     rows.push(newRow)
 }
