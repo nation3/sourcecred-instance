@@ -19,7 +19,7 @@ jobs:
           persist-credentials: false # Required to make github pages deployment work correctly
 
       - name: Cache Data # Cache SourceCred Data, invalidating if any of the config changes or the SC version is updated
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.11
         with:
           path: '**/cache'
           key: SC-${{ runner.os }}-${{ hashFiles('**/config.json', '**/sourcecred.json', '**/yarn.lock') }}
@@ -42,7 +42,7 @@ jobs:
           cp -r ./{output,data,config,sourcecred.json,package.json,yarn.lock} ./site/
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.4.0
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
