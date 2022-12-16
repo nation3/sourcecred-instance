@@ -28,6 +28,9 @@ jobs:
         env:
           SOURCECRED_GITHUB_TOKEN: ${{ secrets.SOURCECRED_GITHUB_TOKEN }}
           SOURCECRED_DISCORD_TOKEN: ${{ secrets.SOURCECRED_DISCORD_TOKEN }}
+        
+      - name: Store all payoutAddresses in lower-case
+        run: node lower-case-payout-addresses.js
 
       - name: Distribute Grain 💸
         run: yarn grain > grain_output.txt
