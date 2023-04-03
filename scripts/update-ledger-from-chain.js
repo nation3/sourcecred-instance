@@ -93,7 +93,7 @@ async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, g
                         console.log(`Correct payout address already set for passport ${row.passport_id} - gitHubUsername ${githubUsername}`)
                     }
                     else {
-                        console.log(`Payout address not correctly set for passport ${row.passport_id} - gitHubUsername ${githubUsername}`)
+                        console.log(`Payout address not correctly set for GitHub for passport ${row.passport_id} - gitHubUsername ${githubUsername}`)
                         
                         ledgerManager.ledger.setPayoutAddress(uuid, row.owner_address , config.chainId, config.tokenAddress);
 
@@ -101,9 +101,29 @@ async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, g
                     }                
                 }
                 else {
-                    //create identity
+                    console.log(`Creating a new SourceCred identity for ${githubUsername} for passport ${row.passport_id}`)
+                    //create identity            
+                    //from sc.plugins.github._createIdentity(user);    
+                    const baseIdentityProposal = {
+                        pluginName: 'github', 
+                        name: coerce(githubUsername),
+                        type: 'USER',
+                        alias: {
+                            description: `github/[@${githubUsername}](https://github.com/${githubUsername})`,
+                            address: ghAddress,
+                        }
+                    }
 
-                    //setPayoutAddress for new identity
+                    const baseIdentityId = sc.ledger.utils.ensureIdentityExists(
+                        ledgerManager.ledger,
+                        baseIdentityProposal,
+                    );
+            
+                    console.log(`Base Identity ID ${JSON.stringify(baseIdentityId)}`);
+
+                    console.log(`Setting payout address for GitHub for passport ${row.passport_id} - gitHubUsername ${githubUsername}`)
+                    ledgerManager.ledger.setPayoutAddress(baseIdentityId, row.owner_address , config.chainId, config.tokenAddress);
+                    console.log(`Updated payout address to ${row.owner_address} for passport ${row.passport_id} - gitHubUsername ${githubUsername}`)
                 }
             })
             .on('end', () => {
@@ -121,6 +141,19 @@ async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, g
     };
 }
 
+const COERCE_PATTERN = /[^A-Za-z0-9-]/g;
+/**
+ * Attempt to coerce a string into a valid name, by replacing invalid
+ * characters like `_` or `#` with hyphens.
+ *
+ * This can still error, if given a very long string or the empty string, it
+ * will fail rather than try to change the name length.
+ */
+function coerce(name) {
+  const coerced = name.replace(COERCE_PATTERN, "-");
+  return coerced;
+}
+
 function cleanGithubUsername(ghUsername) {
     //https://github.com/luisivan
     //@adelaideisla
@@ -134,7 +167,7 @@ function cleanGithubUsername(ghUsername) {
         processing = processing.substring(0);
     }
 
-    return processing.toLowerCase();
+    return processing;
     
 }
 
