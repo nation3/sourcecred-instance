@@ -4,8 +4,10 @@ const config = require("./config.js");
 const fetch = require("node-fetch");
 const csvParser = require('csv-parser');
 const { Readable } = require('stream');
-const scUtils = require('./sourcecred-utils');
+ 
 const discordUtils = require('./discord-utils');
+const discourseUtils = require('./discourse-utils');
+const githubUtils = require('./github-utils');
 
 
 const SOURCECRED_URL =
@@ -44,8 +46,9 @@ async function updateLedgerFromChain() {
         lowerAccountToIdentityMap.set(key.toLowerCase(),value);
     });
 
-    await processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, githubFile);
-    await processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, discordFile);
+    //await processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, githubFile);
+    //await processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, discordFile);
+    await processDiscourseCitizens(ledgerManager, lowerAccountToIdentityMap, discourseFile);
 }
 
 async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, githubFile) {
@@ -54,7 +57,7 @@ async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, g
         const readable = Readable.from(githubFile);
         readable.pipe(csvParser())
             .on('data', (row) => {
-               testAndUpdateGithubAccount(ledgerManager, lowerAccountToIdentityMap, row);
+               githubUtils.testAndUpdateGithubAccount(ledgerManager, lowerAccountToIdentityMap, row, config.chainId, config.tokenAddress);
             })
             .on('end', () => {
                 console.log('GitHub CSV file successfully processed');
@@ -66,7 +69,7 @@ async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, g
 
     const result = await ledgerManager.persist();
     if (result.error) {
-        console.error(`Failed to update the ledger: ${result.error}`);
+        console.error(`Failed to update the ledger after GitHub update: ${result.error}`);
         throw result.error
     };
 }
@@ -81,7 +84,7 @@ async function processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, 
         const readable = Readable.from(discordFile);
         readable.pipe(csvParser())
             .on('data', (row) => {
-               testAndUpdateDiscordAccount(ledgerManager, lowerAccountToIdentityMap, discordMemberMap, row);
+               discordUtils.testAndUpdateDiscordAccount(ledgerManager, lowerAccountToIdentityMap, discordMemberMap, row, config.chainId, config.tokenAddress);
             })
             .on('end', () => {
                 console.log('Discord CSV file successfully processed');
@@ -93,179 +96,33 @@ async function processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, 
 
     const result = await ledgerManager.persist();
     if (result.error) {
-        console.error(`Failed to update the ledger: ${result.error}`);
+        console.error(`Failed to update the ledger after Discord update: ${result.error}`);
         throw result.error
     };
 }
 
-function testAndUpdateGithubAccount(ledgerManager, lowerAccountToIdentityMap, passportData) {
-    const {passport_id, owner_address, github_username, github_username_ens} = passportData;
+async function processDiscourseCitizens(ledgerManager, lowerAccountToIdentityMap, discourseFile) {
+    console.log('Processing Disoucrse CSV file');
 
-    console.info(`Reading GitHub data for: ${passport_id}`);
+    const promise = new Promise(function(resolve, reject)  {
+        const readable = Readable.from(discourseFile);
+        readable.pipe(csvParser())
+            .on('data', (row) => {
+               discourseUtils.testAndUpdateDiscourseAccount(ledgerManager, lowerAccountToIdentityMap, row, config.chainId, config.tokenAddress);
+            })
+            .on('end', () => {
+                console.log('Discourse CSV file successfully processed');
+                resolve(true);
+            })
+    });
 
-    if ((!github_username) && (!github_username_ens)) {
-        console.info(`No GitHub username for passport ${passport_id}`)
-        return;
-    }
+    await promise;
 
-    //get just the username from one of the two columns
-    const tidiedGithubUsername = github_username && github_username.length > 0
-    ? cleanGithubUsername(github_username)
-    : cleanGithubUsername(github_username_ens);
-
-    //construct identity
-    const ghAddress = scUtils.createGitHubIdentity(tidiedGithubUsername);
-
-    const hasAccount = lowerAccountToIdentityMap.has(ghAddress.toLowerCase());
-    if(hasAccount) {
-        testAndUpdateAccountPayoutAddress(ledgerManager, lowerAccountToIdentityMap, ghAddress, 'github', tidiedGithubUsername, passport_id, owner_address);              
-    }
-    else {
-        addGitHubIdentityAndSetPayoutAddress(ledgerManager, ghAddress, tidiedGithubUsername, passport_id, owner_address)
-    }
-}
-
-async function testAndUpdateDiscordAccount(ledgerManager, lowerAccountToIdentityMap, discordMemberMap, passportData) {
-    const {passport_id, owner_address, discord_username,discord_username_ens} = passportData;
-
-    console.info(`Reading Discord data for: ${passport_id}`);
-
-    if ((!discord_username) && (!discord_username_ens)) {
-        console.info(`No Discord username for passport ${passport_id}`)
-        return;
-    }
-
-    //get just the username from one of the two columns
-    let discordUsernameAndDiscriminator = cleanDiscordUsername(discord_username);
-    if (!discordUsernameAndDiscriminator) {
-        discordUsernameAndDiscriminator = cleanDiscordUsername(discord_username_ens);
-    }
-
-    if (!discordUsernameAndDiscriminator) {
-        console.info(`Invalid Discord username ${discord_username}/${discord_username_ens} provided, skipping Discord for passport ${passport_id}`)
-        return;
-    }
-
-    //Discord idenitity is stored using the ID of the account, which we do not have, so have to have a Bot which can find it
-    //N\u0000sourcecred\u0000discord\u0000MEMBER\u0000user\u0000976148126308122644\u0000
-
-    const discordUserId = discordMemberMap.get(`${discordUsernameAndDiscriminator[0]}#${discordUsernameAndDiscriminator[1]}`);
-
-    if(!discordUserId) {
-        console.log(`No Discord Member found in Nation3 Dicsord with Username ${discordUsernameAndDiscriminator[0]}#${discordUsernameAndDiscriminator[1]} not setting Discord Identity for ${passport_id}`);
-        return;
-    }
-
-    const dAddress = scUtils.createDiscordIdentity(discordUsernameAndDiscriminator, discordUserId);
-
-    const hasAccount = lowerAccountToIdentityMap.has(dAddress.toLowerCase());
-    if(hasAccount) {
-        testAndUpdateAccountPayoutAddress(ledgerManager, lowerAccountToIdentityMap, dAddress, 'discord', discordUsernameAndDiscriminator, passport_id, owner_address);              
-    }
-    else {
-        addDiscordIdentityAndSetPayoutAddress(ledgerManager, dAddress, discordUsernameAndDiscriminator, passport_id, owner_address)
-    }
-}
-
-function testAndUpdateAccountPayoutAddress(ledgerManager, lowerAccountToIdentityMap, scAddress, platform, username, passport_id, owner_address) {
-    const uuid = lowerAccountToIdentityMap.get(scAddress.toLowerCase());
-    const account = ledgerManager.ledger.account(uuid);
-    
-    const existingAddress = account.payoutAddresses.get(`{"chainId":"${config.chainId}","tokenAddress":"${config.tokenAddress}","type":"EVM"}`);
-
-    if(!existingAddress) {
-        console.log(`There was not a payout address set for passport ${passport_id} - platform ${platform} - username ${username}`);
-    }
-    
-    if(existingAddress && existingAddress.toLowerCase() === owner_address.toLowerCase()) {
-        console.log(`Correct payout address already set for passport ${passport_id} - platform ${platform} - username ${username}`)
-    }
-    else {
-        console.log(`Payout address not correctly set for GitHub for passport ${passport_id} - platform ${platform} - username ${username}`)
-        
-        ledgerManager.ledger.setPayoutAddress(uuid, owner_address , config.chainId, config.tokenAddress);
-
-        console.log(`Updated payout address to ${owner_address} for passport ${passport_id} - platform ${platform} - username ${username}`)
-    }  
-}
-
-function addGitHubIdentityAndSetPayoutAddress(ledgerManager, scAddress, ghUsername, passport_id, owner_address) {
-    console.log(`Creating a new SourceCred identity for ${ghUsername} for passport ${passport_id}`)
-       
-    const baseIdentityProposal = scUtils.createGitHubIdentityProposal(scAddress, ghUsername);
-
-    const baseIdentityId = sc.ledger.utils.ensureIdentityExists(
-        ledgerManager.ledger,
-        baseIdentityProposal,
-    );
-
-    console.log(`Base Identity ID ${JSON.stringify(baseIdentityId)}`);
-
-    console.log(`Setting payout address for GitHub for passport ${passport_id} - gitHubUsername ${ghUsername}`)
-
-    ledgerManager.ledger.setPayoutAddress(baseIdentityId, owner_address , config.chainId, config.tokenAddress);
-
-    console.log(`Updated payout address to ${owner_address} for passport ${passport_id} - gitHubUsername ${ghUsername}`)
-}
-
-function addDiscordIdentityAndSetPayoutAddress(ledgerManager, scAddress, dUsername, passport_id, owner_address) {
-    console.log(`Creating a new SourceCred identity for ${dUsername} for passport ${passport_id}`)
-       
-    const baseIdentityProposal = scUtils.createDiscordIdentityProposal(scAddress, dUsername);
-
-    const baseIdentityId = sc.ledger.utils.ensureIdentityExists(
-        ledgerManager.ledger,
-        baseIdentityProposal,
-    );
-
-    console.log(`Base Identity ID ${JSON.stringify(baseIdentityId)}`);
-
-    console.log(`Setting payout address for Discord for passport ${passport_id} - discordUsername ${dUsername}`)
-
-    ledgerManager.ledger.setPayoutAddress(baseIdentityId, owner_address , config.chainId, config.tokenAddress);
-
-    console.log(`Updated payout address to ${owner_address} for passport ${passport_id} - discordUsername ${dUsername}`)
-}
-
-function cleanGithubUsername(ghUsername) {
-    //https://github.com/luisivan
-    //@adelaideisla
-    let processing = ghUsername;
-    if(ghUsername.indexOf('/') >= 0) {
-        const regex = /.*\/(.*)/gm;
-        processing = processing.replace(regex, '$1');
-    }
-
-    if(processing.startsWith('@')) {
-        processing = processing.substring(0);
-    }
-
-    return processing;
-}
-
-function cleanDiscordUsername(dUsername) {
-    //https://discord.gg/grbsArn
-    //Adelaide Isla#3410
-    let processing = dUsername;
-
-    if(!processing || processing.indexOf('#') < 0) {
-        return null;
-    }
-
-    if(dUsername.indexOf('/') >= 0) {
-        const regex = /.*\/(.*)/gm;
-        processing = processing.replace(regex, '$1');
-    }
-
-    if(processing.startsWith('@')) {
-        processing = processing.substring(0);
-    }
-
-    const hash = processing.lastIndexOf('#');
-    const username = processing.substring(0, hash);
-    const discriminator = processing.substring(hash + 1);
-
-    return [username, discriminator];
+    const result = await ledgerManager.persist();
+    if (result.error) {
+        console.error(`Failed to update the ledger after Discourse update: ${result.error}`);
+        throw result.error
+    };
 }
 
 async function readCsv(remoteFile) {
