@@ -1,4 +1,5 @@
 module.exports = {
+    guildId: "690584551239581708",
     repo: "nation3/sourcecred-instance", 
     branch: "automated-ledger-update", 
     chainId: "1", 

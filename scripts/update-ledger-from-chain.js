@@ -2,8 +2,11 @@ require('dotenv').config();
 const sc = require('sourcecred').sourcecred;
 const config = require("./config.js");
 const fetch = require("node-fetch");
-const csvParser = require('csv-parser')
-const { Readable } = require("stream")
+const csvParser = require('csv-parser');
+const { Readable } = require('stream');
+const scUtils = require('./sourcecred-utils');
+const discordUtils = require('./discord-utils');
+
 
 const SOURCECRED_URL =
   'https://raw.githubusercontent.com/nation3/nationcred-instance/gh-pages/';
@@ -42,89 +45,16 @@ async function updateLedgerFromChain() {
     });
 
     await processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, githubFile);
+    await processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, discordFile);
 }
 
 async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, githubFile) {
+    console.log('Processing GitHub CSV file');
     const promise = new Promise(function(resolve, reject)  {
         const readable = Readable.from(githubFile);
         readable.pipe(csvParser())
             .on('data', (row) => {
-                console.info(`Reading GitHub data for: ${row.passport_id}`);
-                const ghUsername = row.github_username;
-                const ghUsernameENS = row.github_username_ens;
-
-                if ((!ghUsername) && (!ghUsernameENS)) {
-                    console.info(`No GitHub username for passport ${row.passport_id}`)
-                    return;
-                }
-
-                //get just the username from one of the two columns
-                const githubUsername = ghUsername && ghUsername.length > 0
-                ? cleanGithubUsername(ghUsername)
-                : cleanGithubUsername(ghUsernameENS);
-
-                //construct identity
-                const ghAddress = sc.core.graph.NodeAddress.fromParts([
-                    "sourcecred",
-                    "github",
-                    "USERLIKE",
-                    "USER",
-                    githubUsername
-                ]);
-
-                //{"action":{"identity":{"address":"N\u0000sourcecred\u0000core\u0000IDENTITY\u0000VKoeRG5eG3wFrPwUP30quA\u0000","aliases":[],"id":"VKoeRG5eG3wFrPwUP30quA","name":"johnmark13-github","subtype":"USER"},"type":"CREATE_IDENTITY"},"ledgerTimestamp":1652751063468,"uuid":"l011nxUv5Cy7bsGjhgpZqw","version":"1"}
-                //{"action":{"identity":{"address":"N\u0000sourcecred\u0000core\u0000IDENTITY\u0000HLMS4JjpNt38zUJpLmteWg\u0000","aliases":[],"id":"HLMS4JjpNt38zUJpLmteWg","name":"xPi2","subtype":"USER"},"type":"CREATE_IDENTITY"},"ledgerTimestamp":1652442131578,"uuid":"vHbyyH7rKyiveNpjGMPqpQ","version":"1"}
-                //{"action":{"alias":{"address":"N\u0000sourcecred\u0000github\u0000USERLIKE\u0000USER\u0000johnmark13\u0000","description":"github/[@johnmark13](https://github.com/johnmark13)"},"identityId":"VKoeRG5eG3wFrPwUP30quA","type":"ADD_ALIAS"},"ledgerTimestamp":1652751063469,"uuid":"i57Hyx47nL5OUy01sxFqhA","version":"1"}
-                //{"action":{"alias":{"address":"N\u0000sourcecred\u0000github\u0000USERLIKE\u0000USER\u0000xPi2\u0000","description":"github/[@xPi2](https://github.com/xPi2)"},"identityId":"HLMS4JjpNt38zUJpLmteWg","type":"ADD_ALIAS"},"ledgerTimestamp":1652442131578,"uuid":"ZuxcEcrMrDX6YoY0qIJPMg","version":"1"}
-
-                const hasAccount = lowerAccountToIdentityMap.has(ghAddress.toLowerCase());
-                if(hasAccount) {
-                    const uuid = lowerAccountToIdentityMap.get(ghAddress.toLowerCase());
-                    const account = ledgerManager.ledger.account(uuid);
-                    //ah it already exists, check payout address matches
-                    
-                    const existingAddress = account.payoutAddresses.get(`{"chainId":"${config.chainId}","tokenAddress":"${config.tokenAddress}","type":"EVM"}`);
-
-                    if(!existingAddress) {
-                        console.log(`There was not a payout address set for passport ${row.passport_id} - gitHubUsername ${githubUsername}`);
-                    }
-                    
-                    if(existingAddress && existingAddress.toLowerCase() === row.owner_address.toLowerCase()) {
-                        console.log(`Correct payout address already set for passport ${row.passport_id} - gitHubUsername ${githubUsername}`)
-                    }
-                    else {
-                        console.log(`Payout address not correctly set for GitHub for passport ${row.passport_id} - gitHubUsername ${githubUsername}`)
-                        
-                        ledgerManager.ledger.setPayoutAddress(uuid, row.owner_address , config.chainId, config.tokenAddress);
-
-                        console.log(`Updated payout address to ${row.owner_address} for passport ${row.passport_id} - gitHubUsername ${githubUsername}`)
-                    }                
-                }
-                else {
-                    console.log(`Creating a new SourceCred identity for ${githubUsername} for passport ${row.passport_id}`)
-                    //create identity            
-                    //from sc.plugins.github._createIdentity(user);    
-                    const baseIdentityProposal = {
-                        pluginName: 'github', 
-                        name: coerce(githubUsername),
-                        type: 'USER',
-                        alias: {
-                            description: `github/[@${githubUsername}](https://github.com/${githubUsername})`,
-                            address: ghAddress,
-                        }
-                    }
-
-                    const baseIdentityId = sc.ledger.utils.ensureIdentityExists(
-                        ledgerManager.ledger,
-                        baseIdentityProposal,
-                    );
-            
-                    console.log(`Base Identity ID ${JSON.stringify(baseIdentityId)}`);
-
-                    console.log(`Setting payout address for GitHub for passport ${row.passport_id} - gitHubUsername ${githubUsername}`)
-                    ledgerManager.ledger.setPayoutAddress(baseIdentityId, row.owner_address , config.chainId, config.tokenAddress);
-                    console.log(`Updated payout address to ${row.owner_address} for passport ${row.passport_id} - gitHubUsername ${githubUsername}`)
-                }
+               testAndUpdateGithubAccount(ledgerManager, lowerAccountToIdentityMap, row);
             })
             .on('end', () => {
                 console.log('GitHub CSV file successfully processed');
@@ -141,17 +71,160 @@ async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, g
     };
 }
 
-const COERCE_PATTERN = /[^A-Za-z0-9-]/g;
-/**
- * Attempt to coerce a string into a valid name, by replacing invalid
- * characters like `_` or `#` with hyphens.
- *
- * This can still error, if given a very long string or the empty string, it
- * will fail rather than try to change the name length.
- */
-function coerce(name) {
-  const coerced = name.replace(COERCE_PATTERN, "-");
-  return coerced;
+async function processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, discordFile) {
+    console.log('Processing Discord CSV file');
+
+    //reading DIscord data from Guild
+    const discordMemberMap = await discordUtils.getDiscordMembers(config.guildId);
+
+    const promise = new Promise(function(resolve, reject)  {
+        const readable = Readable.from(discordFile);
+        readable.pipe(csvParser())
+            .on('data', (row) => {
+               testAndUpdateDiscordAccount(ledgerManager, lowerAccountToIdentityMap, discordMemberMap, row);
+            })
+            .on('end', () => {
+                console.log('Discord CSV file successfully processed');
+                resolve(true);
+            })
+    });
+
+    await promise;
+
+    const result = await ledgerManager.persist();
+    if (result.error) {
+        console.error(`Failed to update the ledger: ${result.error}`);
+        throw result.error
+    };
+}
+
+function testAndUpdateGithubAccount(ledgerManager, lowerAccountToIdentityMap, passportData) {
+    const {passport_id, owner_address, github_username, github_username_ens} = passportData;
+
+    console.info(`Reading GitHub data for: ${passport_id}`);
+
+    if ((!github_username) && (!github_username_ens)) {
+        console.info(`No GitHub username for passport ${passport_id}`)
+        return;
+    }
+
+    //get just the username from one of the two columns
+    const tidiedGithubUsername = github_username && github_username.length > 0
+    ? cleanGithubUsername(github_username)
+    : cleanGithubUsername(github_username_ens);
+
+    //construct identity
+    const ghAddress = scUtils.createGitHubIdentity(tidiedGithubUsername);
+
+    const hasAccount = lowerAccountToIdentityMap.has(ghAddress.toLowerCase());
+    if(hasAccount) {
+        testAndUpdateAccountPayoutAddress(ledgerManager, lowerAccountToIdentityMap, ghAddress, 'github', tidiedGithubUsername, passport_id, owner_address);              
+    }
+    else {
+        addGitHubIdentityAndSetPayoutAddress(ledgerManager, ghAddress, tidiedGithubUsername, passport_id, owner_address)
+    }
+}
+
+async function testAndUpdateDiscordAccount(ledgerManager, lowerAccountToIdentityMap, discordMemberMap, passportData) {
+    const {passport_id, owner_address, discord_username,discord_username_ens} = passportData;
+
+    console.info(`Reading Discord data for: ${passport_id}`);
+
+    if ((!discord_username) && (!discord_username_ens)) {
+        console.info(`No Discord username for passport ${passport_id}`)
+        return;
+    }
+
+    //get just the username from one of the two columns
+    let discordUsernameAndDiscriminator = cleanDiscordUsername(discord_username);
+    if (!discordUsernameAndDiscriminator) {
+        discordUsernameAndDiscriminator = cleanDiscordUsername(discord_username_ens);
+    }
+
+    if (!discordUsernameAndDiscriminator) {
+        console.info(`Invalid Discord username ${discord_username}/${discord_username_ens} provided, skipping Discord for passport ${passport_id}`)
+        return;
+    }
+
+    //Discord idenitity is stored using the ID of the account, which we do not have, so have to have a Bot which can find it
+    //N\u0000sourcecred\u0000discord\u0000MEMBER\u0000user\u0000976148126308122644\u0000
+
+    const discordUserId = discordMemberMap.get(`${discordUsernameAndDiscriminator[0]}#${discordUsernameAndDiscriminator[1]}`);
+
+    if(!discordUserId) {
+        console.log(`No Discord Member found in Nation3 Dicsord with Username ${discordUsernameAndDiscriminator[0]}#${discordUsernameAndDiscriminator[1]} not setting Discord Identity for ${passport_id}`);
+        return;
+    }
+
+    const dAddress = scUtils.createDiscordIdentity(discordUsernameAndDiscriminator, discordUserId);
+
+    const hasAccount = lowerAccountToIdentityMap.has(dAddress.toLowerCase());
+    if(hasAccount) {
+        testAndUpdateAccountPayoutAddress(ledgerManager, lowerAccountToIdentityMap, dAddress, 'discord', discordUsernameAndDiscriminator, passport_id, owner_address);              
+    }
+    else {
+        addDiscordIdentityAndSetPayoutAddress(ledgerManager, dAddress, discordUsernameAndDiscriminator, passport_id, owner_address)
+    }
+}
+
+function testAndUpdateAccountPayoutAddress(ledgerManager, lowerAccountToIdentityMap, scAddress, platform, username, passport_id, owner_address) {
+    const uuid = lowerAccountToIdentityMap.get(scAddress.toLowerCase());
+    const account = ledgerManager.ledger.account(uuid);
+    
+    const existingAddress = account.payoutAddresses.get(`{"chainId":"${config.chainId}","tokenAddress":"${config.tokenAddress}","type":"EVM"}`);
+
+    if(!existingAddress) {
+        console.log(`There was not a payout address set for passport ${passport_id} - platform ${platform} - username ${username}`);
+    }
+    
+    if(existingAddress && existingAddress.toLowerCase() === owner_address.toLowerCase()) {
+        console.log(`Correct payout address already set for passport ${passport_id} - platform ${platform} - username ${username}`)
+    }
+    else {
+        console.log(`Payout address not correctly set for GitHub for passport ${passport_id} - platform ${platform} - username ${username}`)
+        
+        ledgerManager.ledger.setPayoutAddress(uuid, owner_address , config.chainId, config.tokenAddress);
+
+        console.log(`Updated payout address to ${owner_address} for passport ${passport_id} - platform ${platform} - username ${username}`)
+    }  
+}
+
+function addGitHubIdentityAndSetPayoutAddress(ledgerManager, scAddress, ghUsername, passport_id, owner_address) {
+    console.log(`Creating a new SourceCred identity for ${ghUsername} for passport ${passport_id}`)
+       
+    const baseIdentityProposal = scUtils.createGitHubIdentityProposal(scAddress, ghUsername);
+
+    const baseIdentityId = sc.ledger.utils.ensureIdentityExists(
+        ledgerManager.ledger,
+        baseIdentityProposal,
+    );
+
+    console.log(`Base Identity ID ${JSON.stringify(baseIdentityId)}`);
+
+    console.log(`Setting payout address for GitHub for passport ${passport_id} - gitHubUsername ${ghUsername}`)
+
+    ledgerManager.ledger.setPayoutAddress(baseIdentityId, owner_address , config.chainId, config.tokenAddress);
+
+    console.log(`Updated payout address to ${owner_address} for passport ${passport_id} - gitHubUsername ${ghUsername}`)
+}
+
+function addDiscordIdentityAndSetPayoutAddress(ledgerManager, scAddress, dUsername, passport_id, owner_address) {
+    console.log(`Creating a new SourceCred identity for ${dUsername} for passport ${passport_id}`)
+       
+    const baseIdentityProposal = scUtils.createDiscordIdentityProposal(scAddress, dUsername);
+
+    const baseIdentityId = sc.ledger.utils.ensureIdentityExists(
+        ledgerManager.ledger,
+        baseIdentityProposal,
+    );
+
+    console.log(`Base Identity ID ${JSON.stringify(baseIdentityId)}`);
+
+    console.log(`Setting payout address for Discord for passport ${passport_id} - discordUsername ${dUsername}`)
+
+    ledgerManager.ledger.setPayoutAddress(baseIdentityId, owner_address , config.chainId, config.tokenAddress);
+
+    console.log(`Updated payout address to ${owner_address} for passport ${passport_id} - discordUsername ${dUsername}`)
 }
 
 function cleanGithubUsername(ghUsername) {
@@ -168,7 +241,31 @@ function cleanGithubUsername(ghUsername) {
     }
 
     return processing;
-    
+}
+
+function cleanDiscordUsername(dUsername) {
+    //https://discord.gg/grbsArn
+    //Adelaide Isla#3410
+    let processing = dUsername;
+
+    if(!processing || processing.indexOf('#') < 0) {
+        return null;
+    }
+
+    if(dUsername.indexOf('/') >= 0) {
+        const regex = /.*\/(.*)/gm;
+        processing = processing.replace(regex, '$1');
+    }
+
+    if(processing.startsWith('@')) {
+        processing = processing.substring(0);
+    }
+
+    const hash = processing.lastIndexOf('#');
+    const username = processing.substring(0, hash);
+    const discriminator = processing.substring(hash + 1);
+
+    return [username, discriminator];
 }
 
 async function readCsv(remoteFile) {
