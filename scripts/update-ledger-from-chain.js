@@ -46,8 +46,8 @@ async function updateLedgerFromChain() {
         lowerAccountToIdentityMap.set(key.toLowerCase(),value);
     });
 
-    //await processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, githubFile);
-    //await processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, discordFile);
+    await processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, githubFile);
+    await processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, discordFile);
     await processDiscourseCitizens(ledgerManager, lowerAccountToIdentityMap, discourseFile);
 }
 
