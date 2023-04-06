@@ -53,6 +53,7 @@ async function updateLedgerFromChain() {
 
 async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, githubFile) {
     console.log('Processing GitHub CSV file');
+    const ledgerLength = ledgerManager.ledger.eventLog().length;
     const promise = new Promise(function(resolve, reject)  {
         const readable = Readable.from(githubFile);
         readable.pipe(csvParser())
@@ -67,7 +68,7 @@ async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, g
 
     await promise;
 
-    const result = await ledgerManager.persist();
+    const result = await updateOrDont(ledgerManager, ledgerLength);
     if (result.error) {
         console.error(`Failed to update the ledger after GitHub update: ${result.error}`);
         throw result.error
@@ -76,6 +77,7 @@ async function processGitHubCitizens(ledgerManager, lowerAccountToIdentityMap, g
 
 async function processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, discordFile) {
     console.log('Processing Discord CSV file');
+    const ledgerLength = ledgerManager.ledger.eventLog().length;
 
     //reading DIscord data from Guild
     const discordMemberMap = await discordUtils.getDiscordMembers(config.guildId);
@@ -94,7 +96,7 @@ async function processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, 
 
     await promise;
 
-    const result = await ledgerManager.persist();
+    const result = await updateOrDont(ledgerManager, ledgerLength);
     if (result.error) {
         console.error(`Failed to update the ledger after Discord update: ${result.error}`);
         throw result.error
@@ -103,6 +105,7 @@ async function processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, 
 
 async function processDiscourseCitizens(ledgerManager, lowerAccountToIdentityMap, discourseFile) {
     console.log('Processing Disoucrse CSV file');
+    const ledgerLength = ledgerManager.ledger.eventLog().length;
 
     const promise = new Promise(function(resolve, reject)  {
         const readable = Readable.from(discourseFile);
@@ -118,11 +121,16 @@ async function processDiscourseCitizens(ledgerManager, lowerAccountToIdentityMap
 
     await promise;
 
-    const result = await ledgerManager.persist();
+    const result = await updateOrDont(ledgerManager, ledgerLength);
     if (result.error) {
         console.error(`Failed to update the ledger after Discourse update: ${result.error}`);
         throw result.error
     };
+}
+
+async function updateOrDont(ledgerManager, initialLength) {
+    const result = ledgerManager.ledger.eventLog().length > initialLength ? await ledgerManager.persist() : {};
+    return result;
 }
 
 async function readCsv(remoteFile) {
