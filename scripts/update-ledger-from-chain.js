@@ -80,7 +80,7 @@ async function processDiscordCitizens(ledgerManager, lowerAccountToIdentityMap, 
     const ledgerLength = ledgerManager.ledger.eventLog().length;
 
     //reading DIscord data from Guild
-    const discordMemberMap = await discordUtils.getDiscordMembers(config.guildId);
+    const discordMemberMap = await discordUtils.getDiscordMembers(config.discordGuildId);
 
     const promise = new Promise(function(resolve, reject)  {
         const readable = Readable.from(discordFile);
