@@ -38,7 +38,7 @@ async function updateLedgerFromChain() {
 
     const discourseFile = await readCsv(FILE_DISCOURSE_CSV);
 
-    console.info(`Read Citizen Disource data from Github`);
+    console.info(`Read Citizen Discourse data from Github`);
 
     const lowerAccountToIdentityMap = new Map();
 
