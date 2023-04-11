@@ -60,7 +60,7 @@ function addGitHubIdentityAndSetPayoutAddress(ledgerManager, scAddress, ghUserna
 
     console.log(`Setting payout address for GitHub for passport ${passport_id} - gitHubUsername ${ghUsername}`)
 
-    ledgerManager.ledger.setPayoutAddress(baseIdentityId, owner_address ,chainId, tokenAddress);
+    ledgerManager.ledger.setPayoutAddress(baseIdentityId, owner_address, chainId, tokenAddress);
 
     console.log(`Updated payout address to ${owner_address} for passport ${passport_id} - gitHubUsername ${ghUsername}`)
 }
