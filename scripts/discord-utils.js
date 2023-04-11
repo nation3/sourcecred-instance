@@ -57,7 +57,7 @@ module.exports = {
         const discordUserId = discordMemberMap.get(`${discordUsernameAndDiscriminator[0]}#${discordUsernameAndDiscriminator[1]}`);
     
         if(!discordUserId) {
-            console.log(`No Discord Member found in Nation3 Dicsord with Username ${discordUsernameAndDiscriminator[0]}#${discordUsernameAndDiscriminator[1]} not setting Discord Identity for ${passport_id}`);
+            console.log(`No Discord Member found in Nation3 Discord with Username ${discordUsernameAndDiscriminator[0]}#${discordUsernameAndDiscriminator[1]} not setting Discord Identity for ${passport_id}`);
             return;
         }
     
