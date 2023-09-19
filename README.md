@@ -49,11 +49,11 @@ to main and using the Github Action.
 
 1. Hit the big green "Use this template" button on github. (do not fork)
 
-1. Use a **git** client to clone your new repo locally.
+2. Use a **git** client to clone your new repo locally.
 
-1. Get [Yarn], navigate to the cloned repo directory in a terminal, and then run `yarn` to install SourceCred and dependencies.
+3. Get [Yarn], navigate to the cloned repo directory in a terminal, and then run `yarn` to install SourceCred and dependencies.
 
-1. Enable the plugins you want to use by adding them to the `bundledPlugins` array in the `sourcecred.json` file. To disable a plugin, simply remove it. For example,
+4. Enable the plugins you want to use by adding them to the `bundledPlugins` array in the `sourcecred.json` file. To disable a plugin, simply remove it. For example,
    to enable all the plugins:
 
 ```json
