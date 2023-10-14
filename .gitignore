@@ -1,6 +1,7 @@
 node_modules/
 site/
-output/
+output/*
+!output/*.csv
 cache/
 
 .env
