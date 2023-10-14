@@ -8,7 +8,7 @@ const currencyDetails = require('./config/currencyDetails.json')
 const nationAddress = currencyDetails.integrationCurrency.tokenAddress
 
 // 0.50% of the weekly $NATION budget set in config/grain.json
-const FLOOR = 0.00125;
+const FLOOR = 0.01;
 
 generateCSV()
 
