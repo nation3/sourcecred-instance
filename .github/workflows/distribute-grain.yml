@@ -31,6 +31,8 @@ jobs:
 
       - name: Distribute Grain 💸
         run: yarn grain > grain_output.txt
+        
+      - run: cat grain_output.txt
       
       - name: Store all payoutAddresses in lower-case
         run: node lower-case-payout-addresses.js
