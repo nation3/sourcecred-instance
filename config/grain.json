@@ -1,7 +1,7 @@
 {
   "allocationPolicies": [
     {
-      "budget": "0.25",
+      "budget": "2",
       "policyType": "RECENT",
       "discount": 0.5
     }
