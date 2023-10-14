@@ -1,7 +1,8 @@
 node_modules/
 site/
 output/*
-!output/*.csv
+output/*
+!output/grainIntegration*
 cache/
 
 .env
