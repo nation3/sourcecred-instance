@@ -1,8 +1,6 @@
 node_modules/
 site/
-output/*
-output/*
-!output/grainIntegration/
+output/
 cache/
 
 .env
