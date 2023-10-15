@@ -5,7 +5,6 @@ const path = require('path')
 const csvParser = require('csv-parser')
 const csvWriter = require('csv-writer')
 const currencyDetails = require('./config/currencyDetails.json')
-const nationAddress = currencyDetails.integrationCurrency.tokenAddress
 
 // 0.50% of the weekly $NATION budget set in config/grain.json
 const FLOOR = 0.01;
@@ -27,10 +26,7 @@ function generateCSV() {
         
         files.forEach(function(file, index) {
             const filePath = path.join('output/grainIntegration/', file)
-            if (filePath.endsWith('.csv') 
-                    && !filePath.endsWith('_disperse.csv') 
-                    && !filePath.endsWith('_gnosis.csv')
-                    && !filePath.endsWith('_parcel.csv')) {
+            if (filePath.endsWith('.csv')) {
                 // Read the rows of data from the CSV file
                 let csvRows = []
                 fs.createReadStream(filePath)
@@ -45,20 +41,12 @@ function generateCSV() {
 
                         csvRows = pruneRows(csvRows);
 
-                        // Generate CSV for Disperse.app
-                        filePathDisperse = filePath.replace('.csv', '_disperse.csv')
-                        console.log('filePathDisperse', filePathDisperse)
-                        writeToDisperseCSV(filePathDisperse, csvRows);
-
                         // Generate CSV for Gnosis Safe
-                        filePathGnosis = filePath.replace('.csv', '_gnosis.csv')
+                        const fileNameGnosis = file.replace('.csv', '_gnosis.csv')
+                        console.log('fileNameGnosis:', fileNameGnosis)
+                        const filePathGnosis = path.join('grain-distributions/', fileNameGnosis)
                         console.log('filePathGnosis', filePathGnosis)
                         writeToGnosisCSV(filePathGnosis, csvRows)
-
-                        // Generate CSV for Parcel
-                        filePathParcel = filePath.replace('.csv', '_parcel.csv')
-                        console.log('filePathParcel', filePathParcel)
-                        writeToParcelCSV(filePathParcel, csvRows)
                     })
             }
         })
@@ -101,17 +89,6 @@ function convertAmountFormat(csvRows) {
     })
 }
 
-function writeToDisperseCSV(filePathDisperse, csvRows) {
-    console.log('writeToDisperseCSV')
-
-    const writer = csvWriter.createObjectCsvWriter({
-        path: filePathDisperse,
-        header: ['receiver', 'amount']
-    })
-
-    writer.writeRecords(csvRows)
-}
-
 function writeToGnosisCSV(filePathGnosis, csvRows) {
     console.log('writeToGnosisCSV')
     
@@ -123,22 +100,6 @@ function writeToGnosisCSV(filePathGnosis, csvRows) {
             {id: 'receiver', title: 'receiver'},
             {id: 'amount', title: 'amount'},
             {id: 'id', title: 'id'}
-        ]
-    })
-
-    writer.writeRecords(csvRows)
-}
-
-function writeToParcelCSV(filePathParcel, csvRows) {
-    console.log('writeToParcelCSV')
-
-    const writer = csvWriter.createObjectCsvWriter({
-        path: filePathParcel,
-        header: [
-            {id: 'name', title: 'Name(Optional)'},
-            {id: 'receiver', title: 'Address/ENS'},
-            {id: 'amount', title: 'Amount'},
-            {id: 'token_address', title: 'Token Address/Token Symbol'}
         ]
     })
 
