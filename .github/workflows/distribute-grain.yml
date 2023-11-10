@@ -15,7 +15,7 @@ jobs:
   distribute-grain:
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: --max_old_space_size=8192
+      NODE_OPTIONS: --max_old_space_size=14000
     steps:
       - uses: actions/checkout@v3.3.0
 
@@ -31,6 +31,8 @@ jobs:
 
       - name: Distribute Grain 💸
         run: yarn grain > grain_output.txt
+        
+      - run: cat grain_output.txt
       
       - name: Store all payoutAddresses in lower-case
         run: node lower-case-payout-addresses.js
@@ -43,7 +45,12 @@ jobs:
         run: |
           echo "PULL_REQUEST_TITLE=Scheduled grain distribution for week ending $(date +"%B %dth, %Y")" >> $GITHUB_ENV
           description="This PR was auto-generated on $(date +%d-%m-%Y) \
-            to add the latest grain distribution to our instance."
+            to add the latest grain distribution to our instance.
+
+            $(cat grain_output.txt)"
+          description="${description//'%'/'%25'}"
+          description="${description//$'\n'/'%0A'}"
+          description="${description//$'\r'/'%0D'}"
           echo "::set-output name=pr_body::$description"
           rm grain_output.txt
 
