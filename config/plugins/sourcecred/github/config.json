@@ -14,6 +14,7 @@
         "nation3/nationcred-contracts",
         "nation3/nationcred-datasets",
         "nation3/sourcecred-instance",
+        "nation3/subgraphs",
         "nation3/token-supply",
         "nation3/website"
     ]
