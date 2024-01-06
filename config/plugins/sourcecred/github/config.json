@@ -2,6 +2,7 @@
     "repositories": [
         "nation3/app",
         "nation3/citizen-directory",
+        "nation3/citizen-rewards",
         "nation3/court",
         "nation3/docs",
         "nation3/gov",
