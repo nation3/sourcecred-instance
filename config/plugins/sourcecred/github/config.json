@@ -2,6 +2,7 @@
     "repositories": [
         "nation3/app",
         "nation3/citizen-directory",
+        "nation3/citizen-rewards",
         "nation3/court",
         "nation3/docs",
         "nation3/gov",
@@ -14,6 +15,7 @@
         "nation3/nationcred-contracts",
         "nation3/nationcred-datasets",
         "nation3/sourcecred-instance",
+        "nation3/subgraphs",
         "nation3/token-supply",
         "nation3/website"
     ]

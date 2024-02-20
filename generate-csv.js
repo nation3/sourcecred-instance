@@ -42,7 +42,7 @@ function generateCSV() {
                         csvRows = pruneRows(csvRows);
 
                         // Generate CSV for Gnosis Safe
-                        const fileNameGnosis = file.replace('.csv', '_gnosis.csv')
+                        const fileNameGnosis = `${file.substring(0, 10)}_gnosis.csv`
                         console.log('fileNameGnosis:', fileNameGnosis)
                         const filePathGnosis = path.join('grain-distributions/', fileNameGnosis)
                         console.log('filePathGnosis', filePathGnosis)
