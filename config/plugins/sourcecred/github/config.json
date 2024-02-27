@@ -5,6 +5,7 @@
         "nation3/citizen-app",
         "nation3/citizen-directory",
         "nation3/citizen-rewards",
+        "nation3/docs",
         "nation3/gov",
         "nation3/gov-app",
         "nation3/gov-proposals",
@@ -16,7 +17,6 @@
         "nation3/sourcecred-instance",
         "nation3/subgraphs",
         "nation3/token-supply",
-        "nation3/website",
-        "nation3/wiki"
+        "nation3/website"
     ]
 }
