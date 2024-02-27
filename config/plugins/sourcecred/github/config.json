@@ -1,14 +1,14 @@
 {
     "repositories": [
+        "nation3/agreements-app",
+        "nation3/agreements-contracts",
         "nation3/app",
         "nation3/citizen-directory",
         "nation3/citizen-rewards",
-        "nation3/court",
         "nation3/docs",
         "nation3/gov",
         "nation3/gov-app",
         "nation3/gov-proposals",
-        "nation3/jurisdiction",
         "nation3/law",
         "nation3/mobile-passport",
         "nation3/n3bi",
