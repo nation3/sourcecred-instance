@@ -2,7 +2,7 @@
     "repositories": [
         "nation3/agreements-app",
         "nation3/agreements-contracts",
-        "nation3/app",
+        "nation3/citizen-app",
         "nation3/citizen-directory",
         "nation3/citizen-rewards",
         "nation3/docs",
