@@ -12,7 +12,7 @@ const FLOOR = 0.01;
 generateCSV()
 
 /**
- * Generates CSV files compatible with Disperse.app, Gnosis Safe and Parcel.
+ * Generates CSV files compatible with Gnosis Safe.
  */
 function generateCSV() {
     console.log('generateCSV')
