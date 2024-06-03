@@ -20,7 +20,7 @@
     "grain": "sourcecred grain"
   },
   "devDependencies": {
-    "dotenv-cli": "^7.3.0",
+    "dotenv-cli": "^7.4.2",
     "rimraf": "^5.0.7"
   }
 }
