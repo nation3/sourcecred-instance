@@ -1331,6 +1331,14 @@ bech32@1.1.4:
   resolved "https://registry.yarnpkg.com/bech32/-/bech32-1.1.4.tgz#e38c9f37bf179b8eb16ae3a772b40c356d4832e9"
   integrity sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==
 
+better-sqlite3@^11.1.1:
+  version "11.1.1"
+  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-11.1.1.tgz#dfca2ca6fc7c2d91fd1a275d0c41ddd65ee7ad39"
+  integrity sha512-bAlQQb7gwCgxNpDYafK0O4AaIOiTwA7srfqRtBbw0Nsiq6P+qxEYGl3hLw+9C5jX2FVjKW7oxkSouxlJ+3VX8A==
+  dependencies:
+    bindings "^1.5.0"
+    prebuild-install "^7.1.1"
+
 better-sqlite3@^7.0.0:
   version "7.6.2"
   resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-7.6.2.tgz#47cd8cad5b9573cace535f950ac321166bc31384"
@@ -1338,14 +1346,6 @@ better-sqlite3@^7.0.0:
   dependencies:
     bindings "^1.5.0"
     prebuild-install "^7.1.0"
-
-better-sqlite3@^9.1.1:
-  version "9.1.1"
-  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-9.1.1.tgz#f139b180a08ed396e660a0601a46ceefd78b832c"
-  integrity sha512-FhW7bS7cXwkB2SFnPJrSGPmQerVSCzwBgmQ1cIRcYKxLsyiKjljzCbyEqqhYXo5TTBqt5BISiBj2YE2Sy2ynaA==
-  dependencies:
-    bindings "^1.5.0"
-    prebuild-install "^7.1.1"
 
 big-integer@^1.6.48:
   version "1.6.51"
