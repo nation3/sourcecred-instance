@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - run: echo $(node --version)
+      - run: echo $(yarn --version)
       
       - name: Install Packages 🔧
         run: yarn --frozen-lockfile
