@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  YarnInstall:
+  InstallPackages:
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max_old_space_size=14000
