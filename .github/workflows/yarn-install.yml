@@ -1,0 +1,19 @@
+name: Yarn Install
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  install-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: echo $(node --version)
+      - run: echo $(yarn --version)
+      
+      - name: Install Packages 🔧
+        run: yarn --frozen-lockfile
