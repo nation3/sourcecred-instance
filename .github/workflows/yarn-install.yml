@@ -1,0 +1,24 @@
+name: Yarn Install
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  YarnInstall:
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max_old_space_size=14000
+    steps:
+      - uses: actions/checkout@v4.1.7
+        with:
+          persist-credentials: false # Required to make github pages deployment work correctly
+
+      - name: Cache Data # Cache SourceCred Data, invalidating if any of the config changes or the SC version is updated
+        uses: actions/cache@v4.0.2
+        with:
+          path: '**/cache'
+          key: SC-${{ runner.os }}-${{ hashFiles('**/config.json', '**/sourcecred.json', '**/yarn.lock') }}
+
+      - name: Install Packages 🔧
+        run: yarn --frozen-lockfile
